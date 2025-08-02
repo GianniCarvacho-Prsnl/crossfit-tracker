@@ -1,0 +1,57 @@
+{
+  "name": "CrossFit Tracker",
+  "short_name": "CF Tracker",
+  "description": "Track your CrossFit personal records and 1RM calculations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["fitness", "health", "sports"],
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar Peso",
+      "short_name": "Registrar",
+      "description": "Registrar nuevo récord personal",
+      "url": "/register",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Ver Historial",
+      "short_name": "Historial",
+      "description": "Ver todos los registros",
+      "url": "/records",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}

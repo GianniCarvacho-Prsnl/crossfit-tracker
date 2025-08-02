@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "user_id": "test-user-id",
+    "exercise": "Clean",
+    "weight_lbs": 100,
+    "repetitions": 1,
+    "calculated_1rm": 100,
+    "is_calculated": false,
+    "original_unit": "lbs",
+    "created_at": "2024-01-15T10:00:00Z",
+    "updated_at": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "user_id": "test-user-id",
+    "exercise": "Deadlift",
+    "weight_lbs": 135,
+    "repetitions": 5,
+    "calculated_1rm": 152.475,
+    "is_calculated": true,
+    "original_unit": "lbs",
+    "created_at": "2024-01-14T15:30:00Z",
+    "updated_at": "2024-01-14T15:30:00Z"
+  },
+  {
+    "id": "3",
+    "user_id": "test-user-id",
+    "exercise": "Snatch",
+    "weight_lbs": 88.18,
+    "repetitions": 1,
+    "calculated_1rm": 88.18,
+    "is_calculated": false,
+    "original_unit": "kg",
+    "created_at": "2024-01-13T09:15:00Z",
+    "updated_at": "2024-01-13T09:15:00Z"
+  },
+  {
+    "id": "4",
+    "user_id": "test-user-id",
+    "exercise": "Front Squat",
+    "weight_lbs": 110,
+    "repetitions": 3,
+    "calculated_1rm": 120.63,
+    "is_calculated": true,
+    "original_unit": "lbs",
+    "created_at": "2024-01-12T14:45:00Z",
+    "updated_at": "2024-01-12T14:45:00Z"
+  },
+  {
+    "id": "5",
+    "user_id": "test-user-id",
+    "exercise": "Back Squat",
+    "weight_lbs": 154.32,
+    "repetitions": 1,
+    "calculated_1rm": 154.32,
+    "is_calculated": false,
+    "original_unit": "kg",
+    "created_at": "2024-01-11T11:20:00Z",
+    "updated_at": "2024-01-11T11:20:00Z"
+  }
+]
