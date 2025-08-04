@@ -133,6 +133,54 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
   }
 
   /**
+   * Get the latest PR (Personal Record) for each exercise for a user
+   */
+  async getLatestPRs(userId: string): Promise<GetWorkoutRecordsResult> {
+    try {
+      const data = await retryWithBackoff(async () => {
+        const { data, error } = await this.supabase
+          .from('workout_records')
+          .select(`
+            exercise_id,
+            calculated_1rm,
+            created_at,
+            exercise:exercises (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', userId)
+          .order('calculated_1rm', { ascending: false })
+
+        if (error) throw error
+        
+        // Group by exercise and get the highest 1RM for each
+        const prsByExercise = new Map()
+        
+        data?.forEach((record: any) => {
+          const exerciseName = record.exercise?.name
+          if (exerciseName && (!prsByExercise.has(exerciseName) || 
+              record.calculated_1rm > prsByExercise.get(exerciseName).calculated_1rm)) {
+            prsByExercise.set(exerciseName, record)
+          }
+        })
+        
+        return Array.from(prsByExercise.values())
+      }, {
+        maxAttempts: 3,
+        baseDelay: 1000
+      })
+
+      return { success: true, data }
+
+    } catch (error) {
+      const appError = classifyError(error)
+      logError(appError, 'getLatestPRs')
+      return { success: false, error: appError }
+    }
+  }
+
+  /**
    * Validate form data before processing
    */
   private validateFormData(formData: WorkoutFormData): string | null {

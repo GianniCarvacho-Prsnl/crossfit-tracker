@@ -53,15 +53,19 @@ CrossFit Tracker es una aplicación web MVP diseñada para permitir a un practic
 5. CUANDO se muestra un peso ENTONCES el sistema DEBERÁ mostrar tanto el valor en libras como en kilogramos
 6. CUANDO se muestra un registro ENTONCES el sistema DEBERÁ indicar si fue "1RM directo" o "1RM calculado"
 
-### Requisito 5: Conversión de Pesos (Mockup)
+### Requisito 5: Conversión de Pesos
 
-**Historia de Usuario:** Como practicante de CrossFit, quiero acceder a una tabla de conversión de pesos, para que pueda planificar mis entrenamientos conociendo las equivalencias.
+**Historia de Usuario:** Como practicante de CrossFit, quiero acceder a una tabla de conversión de pesos completa y herramientas de conversión, para que pueda planificar mis entrenamientos conociendo las equivalencias exactas entre libras y kilogramos.
 
 #### Criterios de Aceptación
 
-1. CUANDO el usuario accede a "Conversiones" ENTONCES el sistema DEBERÁ mostrar una página con mockup
-2. CUANDO se muestra el mockup ENTONCES DEBERÁ incluir texto explicativo sobre la futura funcionalidad
-3. CUANDO se muestra el mockup ENTONCES DEBERÁ mostrar ejemplo de tabla: barra (45 lbs) + discos variables = total en kg
+1. CUANDO el usuario accede a "Conversiones" ENTONCES el sistema DEBERÁ mostrar una página funcional de conversiones
+2. CUANDO se muestra la página ENTONCES DEBERÁ incluir una tabla de conversión con barra olímpica (45 lbs) + discos de cada 5 lbs por lado hasta 145 lbs por lado
+3. CUANDO se muestra la tabla ENTONCES DEBERÁ mostrar: peso por lado, peso total en lbs, peso total en kg, y discos necesarios
+4. CUANDO el usuario usa el convertidor manual ENTONCES DEBERÁ poder ingresar cualquier peso en lbs o kg y ver la conversión instantánea
+5. CUANDO el usuario selecciona un peso de la tabla ENTONCES el sistema DEBERÁ mostrar la combinación exacta de discos necesarios
+6. CUANDO se muestra una conversión ENTONCES DEBERÁ ser precisa hasta 1 decimal en kg y mostrar el peso exacto en lbs
+7. CUANDO el usuario usa la calculadora de discos ENTONCES DEBERÁ poder ingresar un peso objetivo y ver qué discos necesita para alcanzarlo
 
 ### Requisito 6: Porcentajes de RM (Mockup)
 

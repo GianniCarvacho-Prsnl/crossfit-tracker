@@ -143,6 +143,48 @@ interface NavigationProps {
 // Indicador de usuario autenticado
 ```
 
+#### 5. WeightConversions
+```typescript
+interface WeightConversionsProps {
+  // No props necesarios, componente autónomo
+}
+
+interface PlateConfiguration {
+  plateWeight: number;  // Peso del disco individual
+  quantity: number;     // Cantidad de discos (por lado)
+}
+
+interface WeightConversion {
+  weightPerSide: number;      // Peso por lado en lbs
+  totalWeightLbs: number;     // Peso total en lbs (incluye barra)
+  totalWeightKg: number;      // Peso total en kg
+  plates: PlateConfiguration[]; // Configuración de discos necesarios
+}
+
+// Tabla de conversión completa con incrementos de 5 lbs
+// Convertidor manual bidireccional (lbs ↔ kg)
+// Calculadora de discos para peso objetivo
+```
+
+#### 6. PlateCalculator
+```typescript
+interface PlateCalculatorProps {
+  targetWeight: number;
+  unit: 'lbs' | 'kg';
+}
+
+interface PlateCalculation {
+  isValid: boolean;           // Si el peso es alcanzable con discos disponibles
+  totalWeight: number;        // Peso total real alcanzado
+  plates: PlateConfiguration[]; // Discos necesarios por lado
+  difference: number;         // Diferencia con peso objetivo
+}
+
+// Calcula combinación óptima de discos
+// Maneja discos estándar: 45, 35, 25, 15, 10, 5, 2.5 lbs
+// Muestra alternativas si peso exacto no es posible
+```
+
 ### Interfaces de Datos
 
 #### Exercise
@@ -432,6 +474,79 @@ export const formatWeight = (weight: number, unit: 'lbs' | 'kg'): string => {
 
 export const formatDate = (date: Date): string => {
   return date.toLocaleDateString('es-ES');
+};
+```
+
+### Conversiones y Cálculo de Discos
+```typescript
+// utils/plateCalculations.ts
+export const OLYMPIC_BAR_WEIGHT = 45; // lbs
+export const AVAILABLE_PLATES = [45, 35, 25, 15, 10, 5, 2.5]; // lbs por disco
+
+export const generateWeightConversions = (): WeightConversion[] => {
+  const conversions: WeightConversion[] = [];
+  
+  // Generar tabla desde 0 hasta 145 lbs por lado, incrementos de 5 lbs
+  for (let weightPerSide = 0; weightPerSide <= 145; weightPerSide += 5) {
+    const totalWeightLbs = OLYMPIC_BAR_WEIGHT + (weightPerSide * 2);
+    const totalWeightKg = convertLbsToKg(totalWeightLbs);
+    const plates = calculatePlatesNeeded(weightPerSide);
+    
+    conversions.push({
+      weightPerSide,
+      totalWeightLbs,
+      totalWeightKg,
+      plates
+    });
+  }
+  
+  return conversions;
+};
+
+export const calculatePlatesNeeded = (weightPerSide: number): PlateConfiguration[] => {
+  const plates: PlateConfiguration[] = [];
+  let remainingWeight = weightPerSide;
+  
+  // Algoritmo greedy para encontrar combinación óptima
+  for (const plateWeight of AVAILABLE_PLATES) {
+    const quantity = Math.floor(remainingWeight / plateWeight);
+    if (quantity > 0) {
+      plates.push({ plateWeight, quantity });
+      remainingWeight -= plateWeight * quantity;
+    }
+  }
+  
+  return plates;
+};
+
+export const calculateTargetWeight = (targetWeight: number, unit: 'lbs' | 'kg'): PlateCalculation => {
+  // Convertir a lbs si es necesario
+  const targetLbs = unit === 'kg' ? convertKgToLbs(targetWeight) : targetWeight;
+  
+  // Calcular peso por lado (restando barra)
+  const weightPerSide = (targetLbs - OLYMPIC_BAR_WEIGHT) / 2;
+  
+  if (weightPerSide < 0) {
+    return {
+      isValid: false,
+      totalWeight: OLYMPIC_BAR_WEIGHT,
+      plates: [],
+      difference: targetLbs - OLYMPIC_BAR_WEIGHT
+    };
+  }
+  
+  const plates = calculatePlatesNeeded(weightPerSide);
+  const actualWeightPerSide = plates.reduce((sum, plate) => 
+    sum + (plate.plateWeight * plate.quantity), 0
+  );
+  const actualTotalWeight = OLYMPIC_BAR_WEIGHT + (actualWeightPerSide * 2);
+  
+  return {
+    isValid: Math.abs(actualTotalWeight - targetLbs) < 0.1,
+    totalWeight: actualTotalWeight,
+    plates,
+    difference: actualTotalWeight - targetLbs
+  };
 };
 ```
 
