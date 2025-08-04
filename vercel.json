@@ -1,12 +1,5 @@
 {
   "version": 2,
-  "name": "crossfit-tracker",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -204,11 +197,7 @@
       ]
     }
   ],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SUPABASE_ACCESS_TOKEN": "@supabase-access-token"
-  },
+
   "build": {
     "env": {
       "NODE_ENV": "production"

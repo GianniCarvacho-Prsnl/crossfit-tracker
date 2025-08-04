@@ -83,9 +83,17 @@ if (process.env.NODE_ENV === 'production' || process.env.ENABLE_PWA === 'true') 
     ]
   });
 
-  const withBundleAnalyzer = require('@next/bundle-analyzer')({
-    enabled: process.env.ANALYZE === 'true',
-  });
+  // Only use bundle analyzer if it's installed and ANALYZE is true
+  let withBundleAnalyzer = (config) => config;
+  if (process.env.ANALYZE === 'true') {
+    try {
+      withBundleAnalyzer = require('@next/bundle-analyzer')({
+        enabled: true,
+      });
+    } catch (e) {
+      console.warn('Bundle analyzer not available, skipping...');
+    }
+  }
 
   // Add production optimizations
   nextConfig.webpack = (config, { dev, isServer }) => {
