@@ -1,3 +1,5 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -13,6 +15,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+
 };
 
 // Only add PWA and bundle analyzer in production or when explicitly enabled
@@ -97,6 +100,12 @@ if (process.env.NODE_ENV === 'production' || process.env.ENABLE_PWA === 'true') 
 
   // Add production optimizations
   nextConfig.webpack = (config, { dev, isServer }) => {
+    // Add path alias resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname),
+    };
+    
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
