@@ -8,10 +8,12 @@ export enum ErrorType {
   AUTHENTICATION = 'authentication',
   VALIDATION = 'validation',
   DATABASE = 'database',
+  STORAGE = 'storage',
+  SETTINGS = 'settings',
   UNKNOWN = 'unknown'
 }
 
-export interface AppError {
+export interface AppErrorInterface {
   type: ErrorType
   message: string
   originalError?: Error
@@ -19,10 +21,38 @@ export interface AppError {
   userMessage: string
 }
 
+export class AppError extends Error implements AppErrorInterface {
+  public readonly type: ErrorType
+  public readonly originalError?: Error
+  public readonly retryable: boolean
+  public readonly userMessage: string
+
+  constructor(
+    userMessage: string,
+    type: ErrorType = ErrorType.UNKNOWN,
+    originalError?: Error | string,
+    retryable: boolean = true
+  ) {
+    const message = typeof originalError === 'string' ? originalError : originalError?.message || userMessage
+    super(message)
+    
+    this.name = 'AppError'
+    this.type = type
+    this.userMessage = userMessage
+    this.retryable = retryable
+    this.originalError = originalError instanceof Error ? originalError : undefined
+    
+    // Maintain proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AppError)
+    }
+  }
+}
+
 /**
  * Classify errors based on their characteristics
  */
-export function classifyError(error: any): AppError {
+export function classifyError(error: any): AppErrorInterface {
   // Network errors
   if (error?.message?.includes('fetch') || 
       error?.message?.includes('network') ||
@@ -48,6 +78,20 @@ export function classifyError(error: any): AppError {
       originalError: error,
       retryable: false,
       userMessage: 'Error de autenticación. Por favor, inicia sesión nuevamente.'
+    }
+  }
+
+  // Storage errors
+  if (error?.message?.includes('storage') ||
+      error?.message?.includes('upload') ||
+      error?.message?.includes('file') ||
+      error?.message?.includes('bucket')) {
+    return {
+      type: ErrorType.STORAGE,
+      message: error.message || 'Storage error',
+      originalError: error,
+      retryable: true,
+      userMessage: 'Error al subir archivo. Intenta nuevamente.'
     }
   }
 
@@ -156,7 +200,7 @@ export async function retryWithBackoff<T>(
 /**
  * Error logging utility
  */
-export function logError(error: AppError, context?: string) {
+export function logError(error: AppErrorInterface, context?: string) {
   const logData = {
     type: error.type,
     message: error.message,
@@ -217,23 +261,87 @@ export function getErrorMessage(error: any, fallback = 'Ha ocurrido un error ine
  * Validation error helpers
  */
 export function createValidationError(field: string, message: string): AppError {
-  return {
-    type: ErrorType.VALIDATION,
-    message: `Validation error for ${field}: ${message}`,
-    retryable: false,
-    userMessage: message
-  }
+  return new AppError(
+    message,
+    ErrorType.VALIDATION,
+    `Validation error for ${field}: ${message}`,
+    false
+  )
 }
 
 /**
  * Network error helpers
  */
 export function createNetworkError(originalError?: Error): AppError {
-  return {
-    type: ErrorType.NETWORK,
-    message: originalError?.message || 'Network error',
+  return new AppError(
+    'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.',
+    ErrorType.NETWORK,
     originalError,
-    retryable: true,
-    userMessage: 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.'
+    true
+  )
+}
+
+/**
+ * Settings-specific error helpers
+ */
+export function createSettingsError(
+  message: string, 
+  type: ErrorType = ErrorType.SETTINGS,
+  originalError?: Error,
+  retryable: boolean = true
+): AppError {
+  return new AppError(message, type, originalError, retryable)
+}
+
+/**
+ * Settings-specific retry configurations
+ */
+export const SETTINGS_RETRY_CONFIG: Record<string, Partial<RetryConfig>> = {
+  profile: {
+    maxAttempts: 3,
+    baseDelay: 1000,
+    maxDelay: 5000,
+    backoffFactor: 1.5
+  },
+  'personal-data': {
+    maxAttempts: 3,
+    baseDelay: 1000,
+    maxDelay: 5000,
+    backoffFactor: 1.5
+  },
+  security: {
+    maxAttempts: 2, // Less retries for security operations
+    baseDelay: 2000,
+    maxDelay: 8000,
+    backoffFactor: 2
+  },
+  preferences: {
+    maxAttempts: 5, // More retries for preferences (less critical)
+    baseDelay: 500,
+    maxDelay: 3000,
+    backoffFactor: 1.2
+  },
+  training: {
+    maxAttempts: 3,
+    baseDelay: 1000,
+    maxDelay: 5000,
+    backoffFactor: 1.5
+  },
+  exercises: {
+    maxAttempts: 3,
+    baseDelay: 1000,
+    maxDelay: 5000,
+    backoffFactor: 1.5
   }
+}
+
+/**
+ * Settings-specific retry function
+ */
+export async function retrySettingsOperation<T>(
+  fn: () => Promise<T>,
+  context: string
+): Promise<T> {
+  const config = SETTINGS_RETRY_CONFIG[context] || {}
+  return retryWithBackoff(fn, config)
 }

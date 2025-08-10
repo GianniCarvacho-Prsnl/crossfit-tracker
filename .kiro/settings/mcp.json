@@ -28,7 +28,9 @@
         "list_branches",
         "apply_migration",
         "list_tables",
-        "execute_sql"
+        "execute_sql",
+        "list_migrations",
+        "get_logs"
       ]
     }
   }

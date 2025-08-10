@@ -1,0 +1,89 @@
+{
+  "timestamp": "2025-08-08T04:41:25.390Z",
+  "summary": {
+    "totalPassed": 1,
+    "totalFailed": 8,
+    "overallTotal": 9,
+    "overallPassRate": 11,
+    "allTestsPassed": false
+  },
+  "categories": {
+    "e2e": {
+      "passed": 0,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "Complete user settings workflow",
+          "success": false
+        }
+      ]
+    },
+    "responsive": {
+      "passed": 0,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "Multi-device responsive testing",
+          "success": false
+        }
+      ]
+    },
+    "accessibility": {
+      "passed": 0,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "WCAG 2.1 AA compliance testing",
+          "success": false
+        }
+      ]
+    },
+    "performance": {
+      "passed": 0,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "Mobile performance and animation optimization",
+          "success": false
+        }
+      ]
+    },
+    "unit": {
+      "passed": 0,
+      "failed": 4,
+      "tests": [
+        {
+          "name": "Settings components unit tests",
+          "success": false
+        },
+        {
+          "name": "Settings hooks unit tests",
+          "success": false
+        },
+        {
+          "name": "TypeScript type checking",
+          "success": false
+        },
+        {
+          "name": "Production build verification",
+          "success": false
+        }
+      ]
+    },
+    "integration": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Settings integration tests",
+          "success": true
+        }
+      ]
+    }
+  },
+  "environment": {
+    "nodeVersion": "v24.5.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  }
+}

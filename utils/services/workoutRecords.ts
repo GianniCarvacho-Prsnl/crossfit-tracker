@@ -35,7 +35,8 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
       // Validate input data
       const validationError = this.validateFormData(formData)
       if (validationError) {
-        const appError = classifyError(new Error(validationError))
+        const classified = classifyError(new Error(validationError))
+        const appError = new AppError(classified.userMessage, classified.type, validationError)
         logError(appError, 'createWorkoutRecord validation')
         return { success: false, error: appError }
       }
@@ -92,7 +93,8 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
       return { success: true, data: result }
 
     } catch (error) {
-      const appError = classifyError(error)
+      const classified = classifyError(error)
+      const appError = new AppError(classified.userMessage, classified.type, error instanceof Error ? error.message : 'Unknown error')
       logError(appError, 'createWorkoutRecord')
       return { success: false, error: appError }
     }
@@ -126,7 +128,8 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
       return { success: true, data }
 
     } catch (error) {
-      const appError = classifyError(error)
+      const classified = classifyError(error)
+      const appError = new AppError(classified.userMessage, classified.type, error instanceof Error ? error.message : 'Unknown error')
       logError(appError, 'getWorkoutRecords')
       return { success: false, error: appError }
     }
@@ -174,7 +177,8 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
       return { success: true, data }
 
     } catch (error) {
-      const appError = classifyError(error)
+      const classified = classifyError(error)
+      const appError = new AppError(classified.userMessage, classified.type, error instanceof Error ? error.message : 'Unknown error')
       logError(appError, 'getLatestPRs')
       return { success: false, error: appError }
     }

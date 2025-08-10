@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { Exercise, WeightUnit, WorkoutFormData } from '@/types/workout'
+import { useState, useEffect } from 'react'
+import { Exercise, ExerciseName, WeightUnit, WorkoutFormData } from '@/types/workout'
 import { calculateOneRM, isCalculatedRM } from '@/utils/calculations'
 import { convertToLbs } from '@/utils/conversions'
 import { AppError } from '@/utils/errorHandling'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import { LoadingButton } from '@/components/ui/LoadingState'
+import { useExercises } from '@/hooks/useExercises'
 
 interface WorkoutFormProps {
   onSubmit: (data: WorkoutFormData) => Promise<void>
@@ -16,8 +17,6 @@ interface WorkoutFormProps {
   onClearError?: () => void
 }
 
-const EXERCISES: Exercise[] = ['Clean', 'Snatch', 'Deadlift', 'Front Squat', 'Back Squat']
-
 export default function WorkoutForm({ 
   onSubmit, 
   loading = false, 
@@ -25,8 +24,10 @@ export default function WorkoutForm({
   onRetry,
   onClearError
 }: WorkoutFormProps) {
+  const { exercises, loading: exercisesLoading, error: exercisesError } = useExercises()
+  
   const [formData, setFormData] = useState<WorkoutFormData>({
-    exercise: 'Clean',
+    exercise: '',
     weight: 0,
     repetitions: 1,
     unit: 'lbs'
@@ -34,6 +35,13 @@ export default function WorkoutForm({
   
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [calculatedRM, setCalculatedRM] = useState<number | null>(null)
+
+  // Set default exercise when exercises load
+  useEffect(() => {
+    if (exercises.length > 0 && !formData.exercise) {
+      setFormData(prev => ({ ...prev, exercise: exercises[0].name }))
+    }
+  }, [exercises, formData.exercise])
 
   // Calculate 1RM whenever weight or reps change
   const updateCalculatedRM = (weight: number, reps: number) => {
@@ -106,7 +114,7 @@ export default function WorkoutForm({
       await onSubmit(formData)
       // Reset form on successful submission
       setFormData({
-        exercise: 'Clean',
+        exercise: exercises.length > 0 ? exercises[0].name : '',
         weight: 0,
         repetitions: 1,
         unit: 'lbs'
@@ -117,6 +125,31 @@ export default function WorkoutForm({
       console.error('Error submitting form:', error)
       // The error handling is now done in the parent component
     }
+  }
+
+  // Show loading state while exercises are loading
+  if (exercisesLoading) {
+    return (
+      <div className="space-y-responsive" data-testid="workout-form-loading">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-responsive-sm text-gray-600">Cargando ejercicios...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if exercises failed to load
+  if (exercisesError) {
+    return (
+      <div className="space-y-responsive" data-testid="workout-form-error">
+        <ErrorDisplay
+          error={exercisesError}
+          onRetry={() => window.location.reload()}
+          variant="card"
+        />
+      </div>
+    )
   }
 
   return (
@@ -146,15 +179,20 @@ export default function WorkoutForm({
         <select
           id="exercise"
           value={formData.exercise}
-          onChange={(e) => handleInputChange('exercise', e.target.value as Exercise)}
+          onChange={(e) => handleInputChange('exercise', e.target.value as ExerciseName)}
           className="input-mobile w-full"
           data-testid="exercise-select"
+          disabled={exercises.length === 0}
         >
-          {EXERCISES.map((exercise) => (
-            <option key={exercise} value={exercise}>
-              {exercise}
-            </option>
-          ))}
+          {exercises.length === 0 ? (
+            <option value="">No hay ejercicios disponibles</option>
+          ) : (
+            exercises.map((exercise) => (
+              <option key={exercise.id} value={exercise.name}>
+                {exercise.name}
+              </option>
+            ))
+          )}
         </select>
         {errors.exercise && (
           <p className="mt-2 text-responsive-xs text-red-600">{errors.exercise}</p>

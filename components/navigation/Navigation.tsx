@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
+import UserSettingsMenu from '@/components/settings/UserSettingsMenu'
 
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
@@ -30,10 +31,7 @@ export default function Navigation() {
     return () => subscription.unsubscribe()
   }, [supabase.auth])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+
 
   // Don't show navigation on login page
   if (pathname === '/login' || !user) {
@@ -74,23 +72,8 @@ export default function Navigation() {
               </Link>
             ))}
             
-            {/* User indicator and logout */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-responsive-xs text-gray-500 hidden lg:inline">
-                  {user?.email?.split('@')[0]}
-                </span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="min-h-touch px-4 py-2 text-responsive-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center"
-                data-testid="logout-button"
-              >
-                <span className="hidden lg:inline">Cerrar Sesión</span>
-                <span className="lg:hidden">Salir</span>
-              </button>
-            </div>
+            {/* User Settings Menu */}
+            <UserSettingsMenu user={user} />
           </div>
 
           {/* Mobile menu button */}
@@ -131,10 +114,9 @@ export default function Navigation() {
       {isMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white" data-testid="nav-menu">
           <div className="px-responsive py-4 space-y-2">
-            {/* User indicator for mobile */}
-            <div className="flex items-center space-x-3 px-4 py-3 text-responsive-sm text-gray-500 border-b border-gray-100 mb-4">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>Conectado como: {user?.email?.split('@')[0]}</span>
+            {/* User Settings Menu for mobile */}
+            <div className="px-4 py-3 border-b border-gray-100 mb-4">
+              <UserSettingsMenu user={user} onClose={() => setIsMenuOpen(false)} />
             </div>
             
             {navItems.map((item) => (
@@ -152,16 +134,6 @@ export default function Navigation() {
                 {item.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                handleLogout()
-                setIsMenuOpen(false)
-              }}
-              className="nav-link-mobile w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-              data-testid="logout-button"
-            >
-              Cerrar Sesión
-            </button>
           </div>
         </div>
       )}

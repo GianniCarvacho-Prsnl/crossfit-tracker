@@ -1,5 +1,12 @@
-// Exercise types supported by the application
-export type Exercise = 'Clean' | 'Snatch' | 'Deadlift' | 'Front Squat' | 'Back Squat'
+// Exercise interface for dynamic loading
+export interface Exercise {
+  id: number
+  name: string
+  created_at: string
+}
+
+// Legacy type for backward compatibility (will be removed)
+export type ExerciseName = string
 
 // Weight units
 export type WeightUnit = 'lbs' | 'kg'
@@ -22,10 +29,7 @@ export interface WorkoutRecord {
 export interface WorkoutRecordWithExercise {
   id: string
   user_id: string
-  exercise: {
-    id: number
-    name: Exercise
-  }
+  exercise: Exercise
   weight_lbs: number
   repetitions: number
   calculated_1rm: number
@@ -37,7 +41,7 @@ export interface WorkoutRecordWithExercise {
 
 // Form data for creating new workout records
 export interface WorkoutFormData {
-  exercise: Exercise
+  exercise: ExerciseName
   weight: number
   repetitions: number
   unit: WeightUnit
@@ -46,7 +50,7 @@ export interface WorkoutFormData {
 
 // Exercise statistics
 export interface ExerciseStats {
-  exercise: Exercise
+  exercise: ExerciseName
   currentPR: number
   lastWorkout: Date
   totalWorkouts: number

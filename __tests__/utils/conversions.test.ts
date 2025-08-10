@@ -3,7 +3,13 @@ import {
   convertLbsToKg,
   convertToLbs,
   formatWeight,
-  getBothUnits
+  getBothUnits,
+  convertCmToInches,
+  convertInchesToCm,
+  convertInchesToFeetAndInches,
+  convertFeetAndInchesToInches,
+  formatHeight,
+  getBothHeightUnits
 } from '@/utils/conversions'
 
 describe('convertKgToLbs', () => {
@@ -105,5 +111,120 @@ describe('getBothUnits', () => {
     const result = getBothUnits(0)
     expect(result.lbs).toBe('0.0 lbs')
     expect(result.kg).toBe('0.0 kg')
+  })
+})
+
+describe('convertCmToInches', () => {
+  test('should convert centimeters to inches correctly', () => {
+    expect(convertCmToInches(175)).toBeCloseTo(68.898, 3)
+    expect(convertCmToInches(180)).toBeCloseTo(70.866, 3)
+    expect(convertCmToInches(100)).toBeCloseTo(39.370, 3)
+    expect(convertCmToInches(0)).toBe(0)
+  })
+
+  test('should handle decimal values', () => {
+    expect(convertCmToInches(172.5)).toBeCloseTo(67.913, 3)
+  })
+
+  test('should throw error for negative values', () => {
+    expect(() => convertCmToInches(-10)).toThrow('Height cannot be negative')
+  })
+})
+
+describe('convertInchesToCm', () => {
+  test('should convert inches to centimeters correctly', () => {
+    expect(convertInchesToCm(68.898)).toBeCloseTo(175, 1)
+    expect(convertInchesToCm(70.866)).toBeCloseTo(180, 1)
+    expect(convertInchesToCm(39.370)).toBeCloseTo(100, 1)
+    expect(convertInchesToCm(0)).toBe(0)
+  })
+
+  test('should handle decimal values', () => {
+    expect(convertInchesToCm(72)).toBeCloseTo(182.88, 2)
+  })
+
+  test('should throw error for negative values', () => {
+    expect(() => convertInchesToCm(-10)).toThrow('Height cannot be negative')
+  })
+})
+
+describe('convertInchesToFeetAndInches', () => {
+  test('should convert inches to feet and inches correctly', () => {
+    expect(convertInchesToFeetAndInches(72)).toEqual({ feet: 6, inches: 0 })
+    expect(convertInchesToFeetAndInches(69)).toEqual({ feet: 5, inches: 9 })
+    expect(convertInchesToFeetAndInches(60)).toEqual({ feet: 5, inches: 0 })
+    expect(convertInchesToFeetAndInches(0)).toEqual({ feet: 0, inches: 0 })
+  })
+
+  test('should handle decimal values', () => {
+    expect(convertInchesToFeetAndInches(69.5)).toEqual({ feet: 5, inches: 9.5 })
+  })
+
+  test('should throw error for negative values', () => {
+    expect(() => convertInchesToFeetAndInches(-10)).toThrow('Height cannot be negative')
+  })
+})
+
+describe('convertFeetAndInchesToInches', () => {
+  test('should convert feet and inches to total inches correctly', () => {
+    expect(convertFeetAndInchesToInches(6, 0)).toBe(72)
+    expect(convertFeetAndInchesToInches(5, 9)).toBe(69)
+    expect(convertFeetAndInchesToInches(5, 0)).toBe(60)
+    expect(convertFeetAndInchesToInches(0, 0)).toBe(0)
+  })
+
+  test('should handle decimal inches', () => {
+    expect(convertFeetAndInchesToInches(5, 9.5)).toBe(69.5)
+  })
+
+  test('should throw error for negative values', () => {
+    expect(() => convertFeetAndInchesToInches(-1, 0)).toThrow('Height values cannot be negative')
+    expect(() => convertFeetAndInchesToInches(5, -1)).toThrow('Height values cannot be negative')
+  })
+
+  test('should throw error for inches >= 12', () => {
+    expect(() => convertFeetAndInchesToInches(5, 12)).toThrow('Inches must be less than 12')
+    expect(() => convertFeetAndInchesToInches(5, 15)).toThrow('Inches must be less than 12')
+  })
+})
+
+describe('formatHeight', () => {
+  test('should format height in metric correctly', () => {
+    expect(formatHeight(175, 'metric')).toBe('175 cm')
+    expect(formatHeight(180, 'metric')).toBe('180 cm')
+    expect(formatHeight(0, 'metric')).toBe('0 cm')
+  })
+
+  test('should format height in imperial correctly', () => {
+    expect(formatHeight(182.88, 'imperial')).toBe('6\'0"')
+    expect(formatHeight(175.26, 'imperial')).toBe('5\'9"')
+  })
+
+  test('should throw error for negative values', () => {
+    expect(() => formatHeight(-10, 'metric')).toThrow('Height cannot be negative')
+  })
+
+  test('should throw error for invalid unit', () => {
+    expect(() => formatHeight(175, 'invalid' as any)).toThrow('Invalid display unit. Must be "metric" or "imperial"')
+  })
+})
+
+describe('getBothHeightUnits', () => {
+  test('should return both metric and imperial representations', () => {
+    const result = getBothHeightUnits(175)
+    expect(result.metric).toBe('175 cm')
+    expect(result.imperial).toBe('5\'8.9"')
+  })
+
+  test('should handle different heights', () => {
+    const result = getBothHeightUnits(182.88)
+    expect(result.metric).toBe('182.88 cm')
+    expect(result.imperial).toBe('6\'0"')
+  })
+
+  test('should handle zero height', () => {
+    const result = getBothHeightUnits(0)
+    expect(result.metric).toBe('0 cm')
+    expect(result.imperial).toBe('0\'0"')
   })
 })

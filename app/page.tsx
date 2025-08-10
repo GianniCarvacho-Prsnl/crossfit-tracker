@@ -10,7 +10,7 @@ import Link from 'next/link'
 import PerformanceMonitor from '@/components/PerformanceMonitor'
 
 interface ExercisePR {
-  exercise: Exercise
+  exercise: string
   weight: number
   date: string
   isCalculated: boolean
@@ -58,7 +58,7 @@ export default function Home() {
       const recentRecords = records.slice(0, 5) // Last 5 records
       
       // Calculate personal records by exercise
-      const exerciseMap = new Map<Exercise, ExercisePR>()
+      const exerciseMap = new Map<string, ExercisePR>()
       
       records.forEach(record => {
         const exercise = record.exercise.name

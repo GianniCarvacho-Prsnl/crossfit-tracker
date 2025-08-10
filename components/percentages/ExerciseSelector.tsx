@@ -10,22 +10,22 @@ interface ExerciseSelectorProps {
   loading?: boolean
 }
 
-const EXERCISE_LABELS: Record<Exercise, string> = {
-  'Clean': 'Clean',
-  'Snatch': 'Snatch', 
-  'Deadlift': 'Deadlift',
-  'Front Squat': 'Front Squat',
-  'Back Squat': 'Back Squat'
-}
-
 export default function ExerciseSelector({ 
   prs, 
   selectedExercise, 
   onExerciseSelect, 
   loading = false 
 }: ExerciseSelectorProps) {
-  const getPRForExercise = (exercise: Exercise): ExercisePR | undefined => {
-    return prs.find(pr => pr.exercise === exercise)
+  // Get all exercises that have PRs, sorted alphabetically
+  const availableExercises = prs
+    .map(pr => pr.exercise)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  console.log('Available exercises:', availableExercises)
+  console.log('PRs:', prs)
+
+  const getPRForExercise = (exerciseName: string): ExercisePR | undefined => {
+    return prs.find(pr => pr.exercise.name === exerciseName)
   }
 
   if (loading) {
@@ -83,36 +83,26 @@ export default function ExerciseSelector({
       </p>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {Object.entries(EXERCISE_LABELS).map(([exercise, label]) => {
-          const pr = getPRForExercise(exercise as Exercise)
-          const isSelected = selectedExercise === exercise
-          const hasData = !!pr
+        {availableExercises.map((exercise) => {
+          const pr = getPRForExercise(exercise.name)
+          const isSelected = selectedExercise?.name === exercise.name
           
           return (
             <button
-              key={exercise}
-              onClick={() => hasData && onExerciseSelect(exercise as Exercise)}
-              disabled={!hasData}
+              key={exercise.id}
+              onClick={() => pr && onExerciseSelect(exercise)}
               className={`
                 p-4 rounded-lg border-2 text-left transition-all duration-200
                 ${isSelected 
                   ? 'border-blue-500 bg-blue-50 text-blue-900' 
-                  : hasData
-                    ? 'border-gray-200 bg-white text-gray-900 hover:border-blue-300 hover:bg-blue-50'
-                    : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
+                  : 'border-gray-200 bg-white text-gray-900 hover:border-blue-300 hover:bg-blue-50'
                 }
               `}
             >
-              <div className="font-medium text-sm mb-1">{label}</div>
-              {hasData ? (
-                <div className="text-xs text-gray-600">
-                  PR: {pr.oneRM.toFixed(1)} lbs
-                </div>
-              ) : (
-                <div className="text-xs text-gray-400">
-                  Sin registros
-                </div>
-              )}
+              <div className="font-medium text-sm mb-1">{exercise.name}</div>
+              <div className="text-xs text-gray-600">
+                PR: {pr?.oneRM.toFixed(1)} lbs
+              </div>
             </button>
           )
         })}
@@ -123,10 +113,10 @@ export default function ExerciseSelector({
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium text-blue-900">
-                {EXERCISE_LABELS[selectedExercise]}
+                {selectedExercise.name}
               </div>
               <div className="text-sm text-blue-700">
-                PR actual: {getPRForExercise(selectedExercise)?.oneRM.toFixed(1)} lbs
+                PR actual: {getPRForExercise(selectedExercise.name)?.oneRM.toFixed(1)} lbs
               </div>
             </div>
             <div className="text-xs text-blue-600">

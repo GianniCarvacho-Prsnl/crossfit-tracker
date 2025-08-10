@@ -18,7 +18,7 @@ export default function PercentageTable({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">
-          Porcentajes de {exercise}
+          Porcentajes de {exercise.name}
         </h2>
         <p className="text-sm text-gray-600 mt-1">
           1RM actual: {oneRM.toFixed(1)} lbs ({(oneRM / 2.20462).toFixed(1)} kg)

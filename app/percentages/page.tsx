@@ -39,11 +39,12 @@ export default function PercentagesPage() {
       }
 
       const prsData: ExercisePR[] = result.data?.map((record: any) => ({
-        exercise: record.exercise.name as Exercise,
+        exercise: record.exercise,
         oneRM: record.calculated_1rm,
         date: record.created_at
       })) || []
 
+      console.log('PRs loaded:', prsData)
       setPrs(prsData)
     } catch (err) {
       console.error('Error loading PRs:', err)
@@ -57,7 +58,7 @@ export default function PercentagesPage() {
     setSelectedExercise(exercise)
     setCustomPercentages([])
     
-    const pr = prs.find(p => p.exercise === exercise)
+    const pr = prs.find(p => p.exercise.id === exercise.id)
     if (pr) {
       const table = calculateAllPercentages(exercise, pr.oneRM)
       setExerciseTable(table)

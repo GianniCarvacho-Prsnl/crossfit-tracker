@@ -5,7 +5,7 @@ import { WorkoutRecordWithExercise, Exercise } from '@/types/workout'
 import { formatWeight, getBothUnits } from '@/utils/conversions'
 import { workoutRecordService } from '@/utils/services/workoutRecords'
 import { createClient } from '@/utils/supabase/client'
-import { AppError } from '@/utils/errorHandling'
+import { AppError, ErrorType } from '@/utils/errorHandling'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import LoadingState from '@/components/ui/LoadingState'
 
@@ -23,7 +23,7 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
   const [error, setError] = useState<AppError | null>(null)
   
   // Filter and sort state
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | 'all'>('all')
+  const [selectedExercise, setSelectedExercise] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
@@ -58,12 +58,11 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
       setRecords((result.data as any) || [])
     } catch (err) {
       console.error('Error loading records:', err)
-      setError({
-        type: 'unknown' as any,
-        message: err instanceof Error ? err.message : 'Error al cargar registros',
-        retryable: true,
-        userMessage: 'Error al cargar registros. Intenta nuevamente.'
-      })
+      setError(new AppError(
+        'Error al cargar registros. Intenta nuevamente.',
+        ErrorType.DATABASE,
+        err instanceof Error ? err.message : 'Error al cargar registros'
+      ))
     } finally {
       setLoading(false)
     }
@@ -95,8 +94,8 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
     setFilteredRecords(filtered)
   }
 
-  const handleExerciseFilter = (exercise: Exercise | 'all') => {
-    setSelectedExercise(exercise)
+  const handleExerciseFilter = (exerciseName: string) => {
+    setSelectedExercise(exerciseName)
   }
 
   const handleSort = (field: SortField) => {
@@ -159,7 +158,7 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
             <select
               id="exercise-filter"
               value={selectedExercise}
-              onChange={(e) => handleExerciseFilter(e.target.value as Exercise | 'all')}
+              onChange={(e) => handleExerciseFilter(e.target.value)}
               className="input-mobile w-full"
               data-testid="exercise-filter"
             >

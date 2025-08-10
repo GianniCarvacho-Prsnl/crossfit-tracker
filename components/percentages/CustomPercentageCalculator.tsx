@@ -70,7 +70,7 @@ export default function CustomPercentageCalculator({
           
           <label htmlFor="custom-percentage" style={{color: '#1f2937', fontWeight: '500', fontSize: '14px'}}>
 
-            Porcentaje del 1RM de {exercise} ({oneRM.toFixed(1)} lbs)
+            Porcentaje del 1RM de {exercise.name} ({oneRM.toFixed(1)} lbs)
           </label>
           <div className="flex space-x-3">
             <div className="flex-1">
