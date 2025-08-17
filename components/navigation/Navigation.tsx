@@ -42,8 +42,8 @@ export default function Navigation() {
     { href: '/', label: 'Dashboard' },
     { href: '/register', label: 'Registrar' },
     { href: '/records', label: 'Historial' },
-    { href: '/conversions', label: 'Conversiones' },
     { href: '/percentages', label: 'Porcentajes' },
+    { href: '/conversions', label: 'Conversiones' },
   ]
 
   return (
