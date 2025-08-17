@@ -142,29 +142,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-          <div className="card-mobile text-center">
-            <div className="text-responsive-2xl font-bold text-blue-600 mb-2">
-              {stats?.totalWorkouts || 0}
-            </div>
-            <div className="text-responsive-sm text-gray-600">Total Entrenamientos</div>
-          </div>
-          
-          <div className="card-mobile text-center">
-            <div className="text-responsive-2xl font-bold text-green-600 mb-2">
-              {stats?.personalRecords.length || 0}
-            </div>
-            <div className="text-responsive-sm text-gray-600">Ejercicios con PR</div>
-          </div>
-          
-          <div className="card-mobile text-center">
-            <div className="text-responsive-2xl font-bold text-purple-600 mb-2">
-              {stats?.recentRecords.length || 0}
-            </div>
-            <div className="text-responsive-sm text-gray-600">Registros Recientes</div>
-          </div>
-        </div>
+
 
         {/* Personal Records */}
         {stats?.personalRecords && stats.personalRecords.length > 0 && (
