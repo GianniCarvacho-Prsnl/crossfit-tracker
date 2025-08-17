@@ -9,7 +9,6 @@ const PersonalDataSection = lazy(() => import('@/components/settings/sections/Pe
 const ExerciseManagementSection = lazy(() => import('@/components/settings/sections/ExerciseManagementSection'))
 const AppPreferencesSection = lazy(() => import('@/components/settings/sections/AppPreferencesSection'))
 const SecuritySection = lazy(() => import('@/components/settings/sections/SecuritySection'))
-const TrainingSection = lazy(() => import('@/components/settings/sections/TrainingSection'))
 
 // Loading component for sections
 const SectionLoadingSpinner: React.FC = () => (
@@ -56,8 +55,6 @@ const LazySection: React.FC<{
         return <AppPreferencesSection {...sectionProps} />
       case 'security':
         return <SecuritySection {...sectionProps} />
-      case 'training':
-        return <TrainingSection {...sectionProps} />
       default:
         return <div className="text-center py-8 text-gray-500">Sección no encontrada</div>
     }

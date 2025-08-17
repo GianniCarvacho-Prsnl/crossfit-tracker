@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { SettingsSection } from '@/types/settings'
+import { useUserProfile } from '@/hooks/useUserProfile'
 import UserSettingsModal from './UserSettingsModal'
 
 // Screen reader announcements utility
@@ -48,6 +49,9 @@ const UserSettingsMenu: React.FC<UserSettingsMenuProps> = ({
   const menuItemsRef = useRef<(HTMLButtonElement | null)[]>([])
   const router = useRouter()
   const supabase = createClient()
+  
+  // Get user profile to access display name
+  const { profile } = useUserProfile(user?.id)
 
   // Settings menu items
   const menuItems: SettingsMenuItem[] = [
@@ -71,16 +75,17 @@ const UserSettingsMenu: React.FC<UserSettingsMenuProps> = ({
         </svg>
       )
     },
-    {
-      id: 'exercise-management',
-      label: 'Administrar Ejercicios',
-      description: 'Gestionar ejercicios disponibles',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
-    },
+    // TODO: Temporarily hidden - restore when needed
+    // {
+    //   id: 'exercise-management',
+    //   label: 'Administrar Ejercicios',
+    //   description: 'Gestionar ejercicios disponibles',
+    //   icon: (
+    //     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    //     </svg>
+    //   )
+    // },
     {
       id: 'app-preferences',
       label: 'Preferencias',
@@ -99,16 +104,6 @@ const UserSettingsMenu: React.FC<UserSettingsMenuProps> = ({
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      )
-    },
-    {
-      id: 'training',
-      label: 'Entrenamiento',
-      description: 'Metas y recordatorios',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       )
     }
@@ -254,7 +249,8 @@ const UserSettingsMenu: React.FC<UserSettingsMenuProps> = ({
     }
   }, [isDropdownOpen, focusedItemIndex, menuItems])
 
-  const displayName = user?.email?.split('@')[0] || 'Usuario'
+  // Get display name from profile, fallback to email username, then to 'Usuario'
+  const displayName = profile?.display_name?.trim() || user?.email?.split('@')[0] || 'Usuario'
 
   return (
     <>
