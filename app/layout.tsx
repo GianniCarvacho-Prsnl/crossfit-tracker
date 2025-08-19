@@ -3,6 +3,10 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Navigation from '@/components/navigation/Navigation'
 import ErrorBoundary from '@/components/error/ErrorBoundary'
+import { FeedbackProvider } from '@/components/feedback/FeedbackProvider'
+import FeedbackModal from '@/components/feedback/FeedbackModal'
+import Footer from '@/components/Footer'
+import LayoutContent from './LayoutContent'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -65,12 +69,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
-          <div className="min-h-screen bg-gray-50">
-            <Navigation />
-            <main className="flex-1">
+          <FeedbackProvider>
+            <LayoutContent>
               {children}
-            </main>
-          </div>
+            </LayoutContent>
+          </FeedbackProvider>
         </ErrorBoundary>
       </body>
     </html>
