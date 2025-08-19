@@ -1,0 +1,6 @@
+# Feedback UI Components
+
+This directory contains components for the feedback system:
+- FeedbackModal.tsx - Main feedback modal component
+- FeedbackTrigger.tsx - Reusable trigger component
+- FeedbackProvider.tsx - Context provider for feedback state
