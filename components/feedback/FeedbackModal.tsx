@@ -266,8 +266,8 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 value={formData.type}
                 onChange={(e) => handleInputChange('type', e.target.value)}
                 disabled={isSubmitting}
-                className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px] ${
-                  isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''
+                className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px] text-gray-900 ${
+                  isSubmitting ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                 }`}
               >
                 <option value="bug">🐛 Reportar un error</option>
@@ -288,9 +288,9 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Resumen breve del problema o sugerencia"
                 disabled={isSubmitting}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px] ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px] text-gray-900 placeholder-gray-500 ${
                   errors.title ? 'border-red-500' : 'border-gray-300'
-                } ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                } ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                 maxLength={100}
                 required
                 aria-required="true"
@@ -319,9 +319,9 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 placeholder="Describe con más detalle tu feedback, pasos para reproducir el problema, o cualquier información adicional relevante..."
                 rows={4}
                 disabled={isSubmitting}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
-                } ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                } ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                 maxLength={500}
                 aria-invalid={errors.description ? 'true' : 'false'}
                 aria-describedby={errors.description ? 'feedback-description-error' : 'feedback-description-help'}
