@@ -3,16 +3,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackModal from '@/components/feedback/FeedbackModal'
 
-// Mock alert for form submission tests
-const mockAlert = jest.fn()
-global.alert = mockAlert
+// Mock feedback service
+jest.mock('@/services/feedbackService', () => ({
+  submitFeedback: jest.fn()
+}))
+
+import { submitFeedback } from '@/services/feedbackService'
+const mockSubmitFeedback = submitFeedback as jest.MockedFunction<typeof submitFeedback>
 
 describe('FeedbackModal', () => {
   const mockOnClose = jest.fn()
 
   beforeEach(() => {
     mockOnClose.mockClear()
-    mockAlert.mockClear()
+    mockSubmitFeedback.mockClear()
+    // Reset to logged in user by default
+    ;(global as any).mockSupabaseClient.auth.getUser.mockResolvedValue({
+      data: { user: (global as any).mockUser },
+      error: null
+    })
   })
 
   afterEach(() => {
@@ -175,27 +184,37 @@ describe('FeedbackModal', () => {
   })
 
   describe('Form functionality', () => {
-    it('should render form with all required fields', () => {
+    it('should render form with all required fields', async () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
       expect(screen.getByLabelText(/tipo de feedback/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/título/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/descripción/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /enviar feedback/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument()
+      
+      // Wait for submit button to appear with correct text
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /enviar feedback/i })).toBeInTheDocument()
+      })
     })
 
-    it('should show preview notice', () => {
+    it('should show enabled submit button for authenticated users', async () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
-      expect(screen.getByText(/esta es una versión de vista previa/i)).toBeInTheDocument()
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
+        expect(submitButton).toBeInTheDocument()
+        expect(submitButton).not.toBeDisabled()
+      })
     })
 
-    it('should have submit button disabled', () => {
+    it('should have submit button enabled for authenticated users', async () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
-      const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
-      expect(submitButton).toBeDisabled()
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
+        expect(submitButton).not.toBeDisabled()
+      })
     })
 
     it('should reset form when modal opens', () => {
@@ -274,16 +293,45 @@ describe('FeedbackModal', () => {
       })
     })
 
-    it('should show placeholder alert when valid form is submitted', async () => {
+    it('should submit feedback when valid form is submitted', async () => {
+      mockSubmitFeedback.mockResolvedValue({ success: true, data: { id: '123' } })
+      
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /enviar feedback/i })).toBeInTheDocument()
+      })
+      
       const titleInput = screen.getByLabelText(/título/i)
+      const descriptionInput = screen.getByLabelText(/descripción/i)
+      
       fireEvent.change(titleInput, { target: { value: 'Valid title' } })
+      fireEvent.change(descriptionInput, { target: { value: 'Valid description' } })
       
       fireEvent.submit(screen.getByRole('form'))
       
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Funcionalidad próximamente disponible. Esta es una versión de vista previa.')
+        expect(mockSubmitFeedback).toHaveBeenCalledWith({
+          type: 'bug',
+          title: 'Valid title',
+          description: 'Valid description'
+        })
+      })
+    })
+
+    it('should show login message for unauthenticated users', async () => {
+      // Mock no user
+      ;(global as any).mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null
+      })
+      
+      render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
+      
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /inicia sesión para enviar/i })
+        expect(submitButton).toBeInTheDocument()
+        expect(submitButton).toBeDisabled()
       })
     })
   })
@@ -406,16 +454,18 @@ describe('FeedbackModal', () => {
       expect(closeButton).toHaveClass('min-w-[44px]', 'min-h-[44px]')
     })
 
-    it('should have minimum touch target sizes', () => {
+    it('should have minimum touch target sizes', async () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
       const titleInput = screen.getByLabelText(/título/i)
-      const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
       const cancelButton = screen.getByRole('button', { name: /cancelar/i })
       
-      expect(titleInput).toHaveClass('min-h-[44px]')
-      expect(submitButton).toHaveClass('min-h-[44px]')
-      expect(cancelButton).toHaveClass('min-h-[44px]')
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
+        expect(titleInput).toHaveClass('min-h-[44px]')
+        expect(submitButton).toHaveClass('min-h-[44px]')
+        expect(cancelButton).toHaveClass('min-h-[44px]')
+      })
     })
 
     it('should show required field indicator', () => {
@@ -485,20 +535,24 @@ describe('FeedbackModal', () => {
       const typeSelect = screen.getByLabelText(/tipo de feedback/i)
       const titleInput = screen.getByLabelText(/título/i)
       const descriptionInput = screen.getByLabelText(/descripción/i)
-      const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
       const cancelButton = screen.getByRole('button', { name: /cancelar/i })
       
-      // Verify elements are focusable and in correct order
-      expect(closeButton).toBeInTheDocument()
-      expect(typeSelect).toBeInTheDocument()
-      expect(titleInput).toBeInTheDocument()
-      expect(descriptionInput).toBeInTheDocument()
-      expect(submitButton).toBeInTheDocument()
-      expect(cancelButton).toBeInTheDocument()
-      
-      // Test manual focus navigation
-      typeSelect.focus()
-      expect(typeSelect).toHaveFocus()
+      // Wait for submit button to be available
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /enviar feedback/i })
+        
+        // Verify elements are focusable and in correct order
+        expect(closeButton).toBeInTheDocument()
+        expect(typeSelect).toBeInTheDocument()
+        expect(titleInput).toBeInTheDocument()
+        expect(descriptionInput).toBeInTheDocument()
+        expect(submitButton).toBeInTheDocument()
+        expect(cancelButton).toBeInTheDocument()
+        
+        // Test manual focus navigation
+        typeSelect.focus()
+        expect(typeSelect).toHaveFocus()
+      })
       
       titleInput.focus()
       expect(titleInput).toHaveFocus()
@@ -526,14 +580,12 @@ describe('FeedbackModal', () => {
       expect(mockOnClose).not.toHaveBeenCalled()
     })
 
-    it('should have proper form role and description', () => {
+    it('should have proper form role', () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
       const form = screen.getByRole('form')
-      expect(form).toHaveAttribute('aria-describedby', 'feedback-modal-description')
-      
-      const description = screen.getByText(/esta es una versión de vista previa/i)
-      expect(description.closest('div')).toHaveAttribute('id', 'feedback-modal-description')
+      expect(form).toBeInTheDocument()
+      expect(form).toHaveClass('space-y-4')
     })
   })
 
@@ -569,11 +621,13 @@ describe('FeedbackModal', () => {
       expect(closeButton).toHaveClass('top-3', 'right-3', 'sm:top-4', 'sm:right-4')
     })
 
-    it('should have responsive button layout', () => {
+    it('should have responsive button layout', async () => {
       render(<FeedbackModal isOpen={true} onClose={mockOnClose} />)
       
-      const buttonContainer = screen.getByRole('button', { name: /enviar feedback/i }).parentElement
-      expect(buttonContainer).toHaveClass('flex-col', 'sm:flex-row')
+      await waitFor(() => {
+        const buttonContainer = screen.getByRole('button', { name: /enviar feedback/i }).parentElement
+        expect(buttonContainer).toHaveClass('flex-col', 'sm:flex-row')
+      })
     })
   })
 
