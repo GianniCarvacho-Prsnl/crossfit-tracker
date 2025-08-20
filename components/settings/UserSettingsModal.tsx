@@ -83,16 +83,17 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
     //     </svg>
     //   )
     // },
-    {
-      id: 'app-preferences',
-      title: 'Preferencias',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
-    },
+    // TODO: Temporarily hidden - restore when preferences functionality is implemented
+    // {
+    //   id: 'app-preferences',
+    //   title: 'Preferencias',
+    //   icon: (
+    //     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    //     </svg>
+    //   )
+    // },
     {
       id: 'security',
       title: 'Seguridad',
@@ -329,12 +330,12 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
           </div>
 
           {/* Modal Body */}
-          <div className="flex">
+          <div className="flex flex-col sm:flex-row">
             {/* Sidebar Navigation */}
-            <div className="w-64 bg-gray-50 border-r border-gray-200">
+            <div className="w-full sm:w-64 bg-gray-50 border-b sm:border-b-0 sm:border-r border-gray-200">
               <nav 
                 ref={sidebarRef}
-                className="p-4 space-y-1" 
+                className="p-2 sm:p-4 space-x-2 sm:space-x-0 sm:space-y-1 flex sm:flex-col overflow-x-auto sm:overflow-x-visible" 
                 role="navigation" 
                 aria-label="Navegación de secciones de configuración"
               >
@@ -342,22 +343,22 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
                   <button
                     key={section.id}
                     onClick={() => handleSectionChange(section.id, section.title)}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`min-w-0 flex-shrink-0 sm:w-full flex flex-col sm:flex-row items-center sm:space-x-3 px-2 sm:px-3 py-2 text-center sm:text-left rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       activeSection === section.id
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-800 font-medium'
+                        : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                     aria-current={activeSection === section.id ? 'page' : undefined}
                     aria-label={`${section.title}${activeSection === section.id ? ' (sección actual)' : ''}`}
                     data-testid={`nav-${section.id}`}
                   >
                     <div 
-                      className={activeSection === section.id ? 'text-blue-600' : 'text-gray-400'}
+                      className={`flex-shrink-0 mb-1 sm:mb-0 ${activeSection === section.id ? 'text-blue-700' : 'text-gray-600'}`}
                       aria-hidden="true"
                     >
                       {section.icon}
                     </div>
-                    <span className="text-sm">{section.title}</span>
+                    <span className="text-xs sm:text-sm font-medium leading-tight">{section.title}</span>
                   </button>
                 ))}
               </nav>
@@ -366,7 +367,7 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
             {/* Content Area */}
             <div 
               ref={contentRef}
-              className="flex-1 p-6 max-h-[70vh] overflow-y-auto"
+              className="flex-1 p-4 sm:p-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto"
               role="main"
               aria-label={`Contenido de configuración: ${currentSection?.title}`}
               tabIndex={-1}
