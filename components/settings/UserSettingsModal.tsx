@@ -335,7 +335,7 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
             <div className="w-full sm:w-64 bg-gray-50 border-b sm:border-b-0 sm:border-r border-gray-200">
               <nav 
                 ref={sidebarRef}
-                className="p-4 space-y-1 sm:space-y-1 flex sm:flex-col overflow-x-auto sm:overflow-x-visible" 
+                className="p-2 sm:p-4 space-x-2 sm:space-x-0 sm:space-y-1 flex sm:flex-col overflow-x-auto sm:overflow-x-visible" 
                 role="navigation" 
                 aria-label="Navegación de secciones de configuración"
               >
@@ -343,22 +343,22 @@ const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
                   <button
                     key={section.id}
                     onClick={() => handleSectionChange(section.id, section.title)}
-                    className={`w-full sm:w-auto flex items-center space-x-3 px-3 py-2 text-left rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap sm:whitespace-normal ${
+                    className={`min-w-0 flex-shrink-0 sm:w-full flex flex-col sm:flex-row items-center sm:space-x-3 px-2 sm:px-3 py-2 text-center sm:text-left rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       activeSection === section.id
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-800 font-medium'
+                        : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                     aria-current={activeSection === section.id ? 'page' : undefined}
                     aria-label={`${section.title}${activeSection === section.id ? ' (sección actual)' : ''}`}
                     data-testid={`nav-${section.id}`}
                   >
                     <div 
-                      className={`flex-shrink-0 ${activeSection === section.id ? 'text-blue-600' : 'text-gray-400'}`}
+                      className={`flex-shrink-0 mb-1 sm:mb-0 ${activeSection === section.id ? 'text-blue-700' : 'text-gray-600'}`}
                       aria-hidden="true"
                     >
                       {section.icon}
                     </div>
-                    <span className="text-sm">{section.title}</span>
+                    <span className="text-xs sm:text-sm font-medium leading-tight">{section.title}</span>
                   </button>
                 ))}
               </nav>
