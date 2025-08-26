@@ -114,12 +114,12 @@ export default function PlatesInput({
 
       {mode === 'per-side' && (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
             <div>
-              <label htmlFor="left-side" className="block text-responsive-xs font-medium text-gray-600 mb-2">
+              <label htmlFor="left-side" className="block text-xs font-medium text-gray-600 mb-1">
                 Lado izquierdo
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <input
                   id="left-side"
                   type="number"
@@ -133,38 +133,38 @@ export default function PlatesInput({
                       handleLeftSideChange(newWeight)
                     }
                   }}
-                  className="input-mobile flex-1 text-center"
+                  className="input-mobile w-full text-center text-sm"
                   disabled={disabled}
                   data-testid="left-side-input"
                 />
-                <span className="flex items-center px-3 text-responsive-sm font-medium text-gray-600 min-w-[32px]">
+                <span className="flex items-center px-1 text-xs font-medium text-gray-600 whitespace-nowrap">
                   lbs
                 </span>
               </div>
             </div>
             
             <div>
-              <label htmlFor="right-side" className="block text-responsive-xs font-medium text-gray-600 mb-2">
+              <label htmlFor="right-side" className="block text-xs font-medium text-gray-600 mb-1">
                 Lado derecho
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <input
                   id="right-side"
                   type="number"
                   value={rightSideWeight || ''}
-                  className="input-mobile flex-1 bg-gray-50 text-gray-500 text-center"
+                  className="input-mobile w-full bg-gray-50 text-gray-500 text-center text-sm"
                   disabled={true}
                   readOnly={true}
                   data-testid="right-side-input"
                 />
-                <span className="flex items-center px-3 text-responsive-sm font-medium text-gray-600 min-w-[32px]">
+                <span className="flex items-center px-1 text-xs font-medium text-gray-600 whitespace-nowrap">
                   lbs
                 </span>
               </div>
             </div>
           </div>
           
-          <p className="text-responsive-xs text-gray-500 text-center sm:text-left">
+          <p className="text-xs text-gray-500 text-center">
             ⚡ Solo ingresa el peso de los discos, la barra se suma automáticamente
           </p>
         </div>
