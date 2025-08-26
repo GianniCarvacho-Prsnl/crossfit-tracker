@@ -125,7 +125,7 @@ export default function BarVisualization({
           {plateDistribution.map((plate, index) => (
             <div key={index} className="flex items-center gap-1 bg-white px-2 py-1 rounded text-responsive-xs">
               <div className={`w-3 h-3 rounded ${getPlateColor(plate.weight)}`} />
-              <span>{plate.quantity}x{plate.weight} lbs</span>
+              <span className="text-gray-900 font-medium">{plate.quantity}x{plate.weight} lbs</span>
             </div>
           ))}
         </div>
