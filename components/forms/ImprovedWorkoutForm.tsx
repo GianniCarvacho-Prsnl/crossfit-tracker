@@ -10,6 +10,7 @@ import { useExercises } from '@/hooks/useExercises'
 import BarSelector from './BarSelector'
 import PlatesInput from './PlatesInput'
 import WeightSummary from './WeightSummary'
+import BarVisualization from './BarVisualization'
 
 type PlateInputMode = 'total' | 'per-side'
 
@@ -34,7 +35,7 @@ export default function ImprovedWorkoutForm({
   const [selectedExercise, setSelectedExercise] = useState<string>('')
   const [barWeight, setBarWeight] = useState<number>(45)
   const [platesWeight, setPlatesWeight] = useState<number>(0)
-  const [repetitions, setRepetitions] = useState<number>(1)
+  const [repetitions, setRepetitions] = useState<number | ''>(1)
   const [plateInputMode, setPlateInputMode] = useState<PlateInputMode>('total')
   
   // UI state
@@ -50,11 +51,12 @@ export default function ImprovedWorkoutForm({
 
   // Calculate total weight and 1RM whenever inputs change
   const totalWeight = barWeight + platesWeight
+  const numericRepetitions = typeof repetitions === 'number' ? repetitions : 1
   
   useEffect(() => {
-    if (totalWeight > 0 && repetitions > 0 && repetitions <= 20) {
+    if (totalWeight > 0 && numericRepetitions > 0 && numericRepetitions <= 20) {
       try {
-        const rm = calculateOneRM(totalWeight, repetitions)
+        const rm = calculateOneRM(totalWeight, numericRepetitions)
         setCalculatedRM(rm)
       } catch {
         setCalculatedRM(null)
@@ -62,7 +64,7 @@ export default function ImprovedWorkoutForm({
     } else {
       setCalculatedRM(null)
     }
-  }, [totalWeight, repetitions])
+  }, [totalWeight, numericRepetitions])
 
   const clearFieldError = (field: string) => {
     if (errors[field]) {
@@ -88,7 +90,7 @@ export default function ImprovedWorkoutForm({
     if (error && onClearError) onClearError()
   }
 
-  const handleRepetitionsChange = (reps: number) => {
+  const handleRepetitionsChange = (reps: number | '') => {
     setRepetitions(reps)
     clearFieldError('repetitions')
     if (error && onClearError) onClearError()
@@ -117,11 +119,11 @@ export default function ImprovedWorkoutForm({
       newErrors.weight = 'El peso de los discos no puede exceder 500 lbs'
     }
     
-    if (repetitions <= 0) {
+    if (numericRepetitions <= 0 || repetitions === '') {
       newErrors.repetitions = 'Las repeticiones deben ser mayor a 0'
     }
     
-    if (repetitions > 20) {
+    if (numericRepetitions > 20) {
       newErrors.repetitions = 'Máximo 20 repeticiones para cálculo preciso'
     }
     
@@ -141,7 +143,7 @@ export default function ImprovedWorkoutForm({
       const formData: WorkoutFormData = {
         exercise: selectedExercise as ExerciseName,
         weight: totalWeight, // This is the total weight in lbs
-        repetitions: repetitions,
+        repetitions: numericRepetitions,
         unit: 'lbs' // Always lbs as specified in requirements
       }
       
@@ -233,7 +235,7 @@ export default function ImprovedWorkoutForm({
       </div>
 
       {/* Bar Weight and Repetitions Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <BarSelector
           value={barWeight}
           onChange={handleBarWeightChange}
@@ -242,17 +244,28 @@ export default function ImprovedWorkoutForm({
         
         <div>
           <label htmlFor="repetitions" className="block text-responsive-sm font-medium text-gray-700 mb-2">
-            Repeticiones
+            <span className="sm:hidden">Reps</span>
+            <span className="hidden sm:inline">Repeticiones</span>
           </label>
           <input
             id="repetitions"
             type="number"
             min="1"
             max="20"
-            value={repetitions || ''}
-            onChange={(e) => handleRepetitionsChange(parseInt(e.target.value) || 1)}
+            value={repetitions}
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === '') {
+                handleRepetitionsChange('')
+              } else {
+                const numValue = parseInt(value)
+                if (!isNaN(numValue)) {
+                  handleRepetitionsChange(numValue)
+                }
+              }
+            }}
             className="input-mobile w-full"
-            placeholder="Número de repeticiones"
+            placeholder="Reps"
             disabled={loading}
             data-testid="reps-input"
           />
@@ -280,24 +293,14 @@ export default function ImprovedWorkoutForm({
         platesWeight={platesWeight}
       />
 
-      {/* 1RM Calculation Display */}
-      {calculatedRM && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-          <h3 className="text-responsive-sm font-medium text-blue-800 mb-2">
-            1RM {isCalculatedRM(repetitions) ? 'Calculado' : 'Directo'}
-          </h3>
-          <div className="text-responsive-lg font-semibold text-blue-900">
-            {calculatedRM.toFixed(1)} lbs
-            <span className="text-responsive-sm font-normal text-blue-700 ml-2 block sm:inline">
-              ({(calculatedRM / 2.20462).toFixed(1)} kg)
-            </span>
-          </div>
-          {isCalculatedRM(repetitions) && (
-            <p className="text-responsive-xs text-blue-600 mt-2">
-              Calculado usando fórmula de Epley
-            </p>
-          )}
-        </div>
+      {/* Bar Visualization with 1RM info */}
+      {totalWeight > 0 && (
+        <BarVisualization
+          barWeight={barWeight}
+          platesWeight={platesWeight}
+          calculatedRM={calculatedRM}
+          repetitions={numericRepetitions}
+        />
       )}
 
       {/* Submit Button */}

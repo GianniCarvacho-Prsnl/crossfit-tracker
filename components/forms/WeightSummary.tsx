@@ -25,7 +25,7 @@ export default function WeightSummary({ barWeight, platesWeight, className = '' 
         </div>
         
         <div className="flex justify-between items-center">
-          <span className="text-responsive-sm text-gray-600">Discos:</span>
+          <span className="text-responsive-sm text-gray-600">Discos (ambos lados):</span>
           <span className="text-responsive-sm font-medium text-gray-900">
             {platesWeight} lbs
           </span>

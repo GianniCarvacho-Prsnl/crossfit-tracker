@@ -17,7 +17,8 @@ export default function BarSelector({ value, onChange, disabled = false }: BarSe
   return (
     <div>
       <label htmlFor="bar-weight" className="block text-responsive-sm font-medium text-gray-700 mb-2">
-        Peso de la Barra
+        <span className="sm:hidden">Barra</span>
+        <span className="hidden sm:inline">Peso de la Barra</span>
       </label>
       <select
         id="bar-weight"
