@@ -35,6 +35,11 @@ export const DynamicWorkoutForm = createDynamicComponent(
   { ssr: false } // Form doesn't need SSR
 );
 
+export const DynamicImprovedWorkoutForm = createDynamicComponent(
+  () => import('@/components/forms/ImprovedWorkoutForm'),
+  { ssr: false } // Form doesn't need SSR
+);
+
 // Dynamic import for navigation component (for better initial load)
 export const DynamicNavigation = createDynamicComponent(
   () => import('@/components/navigation/Navigation'),

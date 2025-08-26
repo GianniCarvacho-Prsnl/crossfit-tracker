@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
-import { DynamicWorkoutForm } from '@/utils/dynamicImports'
+import { DynamicImprovedWorkoutForm } from '@/utils/dynamicImports'
 import { WorkoutFormData } from '@/types/workout'
 import { workoutRecordService } from '@/utils/services/workoutRecords'
 import { AppError } from '@/utils/errorHandling'
@@ -96,7 +96,7 @@ export default function RegisterPage() {
           )}
 
           <div className="card-mobile" data-testid="register-form">
-            <DynamicWorkoutForm 
+            <DynamicImprovedWorkoutForm 
               onSubmit={handleSubmit} 
               loading={loading}
               error={error}

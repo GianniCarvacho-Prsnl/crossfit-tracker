@@ -46,6 +46,9 @@ Thumbs.db
 logs
 *.log
 
+# Development tracking
+dev-tracking/
+
 # Runtime data
 pids
 *.pid
@@ -111,3 +114,5 @@ public/workbox-*.js
 
 # Supabase
 .supabase/
+
+backups/
