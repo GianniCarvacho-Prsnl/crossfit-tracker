@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client'
 import { AppError, ErrorType } from '@/utils/errorHandling'
 import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import LoadingState from '@/components/ui/LoadingState'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 interface RecordsListProps {
   className?: string
@@ -26,6 +27,18 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
   const [selectedExercise, setSelectedExercise] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+
+  // Delete confirmation dialog state
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean
+    recordId: string | null
+    exerciseName: string
+  }>({
+    isOpen: false,
+    recordId: null,
+    exerciseName: ''
+  })
+  const [deleting, setDeleting] = useState(false)
 
   const supabase = createClient()
 
@@ -106,6 +119,60 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
       // Set new field with default desc order
       setSortField(field)
       setSortOrder('desc')
+    }
+  }
+
+  const handleDeleteClick = (recordId: string, exerciseName: string) => {
+    setDeleteDialog({
+      isOpen: true,
+      recordId,
+      exerciseName
+    })
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({
+      isOpen: false,
+      recordId: null,
+      exerciseName: ''
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.recordId) return
+
+    try {
+      setDeleting(true)
+      setError(null)
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError) throw userError
+      if (!user) throw new Error('Usuario no autenticado')
+
+      const result = await workoutRecordService.deleteWorkoutRecord(deleteDialog.recordId, user.id)
+      
+      if (!result.success) {
+        setError(result.error || null)
+        return
+      }
+
+      // Remove the deleted record from the local state
+      setRecords(currentRecords => 
+        currentRecords.filter(record => record.id !== deleteDialog.recordId)
+      )
+
+      // Close dialog
+      handleDeleteCancel()
+
+    } catch (err) {
+      console.error('Error deleting record:', err)
+      setError(new AppError(
+        'Error al eliminar el registro. Intenta nuevamente.',
+        ErrorType.DATABASE,
+        err instanceof Error ? err.message : 'Error al eliminar registro'
+      ))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -248,18 +315,43 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
                     </p>
                   </div>
                   
-                  {/* Record Type Indicator */}
-                  <div className={`px-3 py-1 rounded-full text-responsive-xs font-medium whitespace-nowrap ml-3 ${
-                    record.is_calculated
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-green-100 text-green-800'
-                  }`} data-testid="record-type">
-                    <span className="hidden xs:inline">
-                      {record.is_calculated ? '1RM calculado' : '1RM directo'}
-                    </span>
-                    <span className="xs:hidden">
-                      {record.is_calculated ? '📊' : '🎯'}
-                    </span>
+                  <div className="flex items-center gap-2 ml-3">
+                    {/* Record Type Indicator */}
+                    <div className={`px-3 py-1 rounded-full text-responsive-xs font-medium whitespace-nowrap ${
+                      record.is_calculated
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-green-100 text-green-800'
+                    }`} data-testid="record-type">
+                      <span className="hidden xs:inline">
+                        {record.is_calculated ? '1RM calculado' : '1RM directo'}
+                      </span>
+                      <span className="xs:hidden">
+                        {record.is_calculated ? '📊' : '🎯'}
+                      </span>
+                    </div>
+                    
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDeleteClick(record.id, record.exercise.name)}
+                      className="min-h-touch p-2 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                      title="Eliminar registro"
+                      data-testid="delete-record-button"
+                    >
+                      <svg 
+                        className="w-5 h-5" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
@@ -293,6 +385,18 @@ export default function RecordsList({ className = '' }: RecordsListProps) {
           })}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Eliminar Registro"
+        message={`¿Estás seguro de que quieres eliminar el registro de ${deleteDialog.exerciseName}? Esta acción no se puede deshacer.`}
+        confirmText={deleting ? "Eliminando..." : "Eliminar"}
+        cancelText="Cancelar"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        variant="danger"
+      />
     </div>
   )
 }

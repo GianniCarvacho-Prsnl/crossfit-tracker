@@ -1,0 +1,36 @@
+{
+  "version": "1.1.0",
+  "buildDate": "2025-08-26",
+  "features": [
+    "Registro de entrenamientos",
+    "Cálculo de 1RM",
+    "Conversiones de peso",
+    "Cálculo de porcentajes",
+    "Historial de registros",
+    "Eliminación de registros"
+  ],
+  "changelog": {
+    "1.1.0": {
+      "date": "2025-08-26",
+      "added": [
+        "Funcionalidad para eliminar registros",
+        "Diálogo de confirmación para eliminación",
+        "Sistema de versionado de la aplicación"
+      ],
+      "improved": [
+        "Manejo de errores mejorado"
+      ]
+    },
+    "1.0.0": {
+      "date": "2025-08-20",
+      "added": [
+        "Registro de entrenamientos",
+        "Cálculo automático de 1RM",
+        "Conversiones entre libras y kilogramos",
+        "Cálculo de porcentajes de 1RM",
+        "Historial completo de registros",
+        "Autenticación de usuarios"
+      ]
+    }
+  }
+}

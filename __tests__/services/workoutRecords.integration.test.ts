@@ -408,4 +408,155 @@ describe('WorkoutRecordService Integration Tests', () => {
       expect(result.data).toBeUndefined()
     })
   })
+
+  describe('deleteWorkoutRecord', () => {
+    const mockUserId = 'user-123'
+    const mockRecordId = 'record-456'
+
+    it('should successfully delete a workout record', async () => {
+      // Mock successful record verification
+      const mockEqSecondQuery = {
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { id: mockRecordId, user_id: mockUserId },
+            error: null
+          })
+        })
+      }
+      const mockEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockEqSecondQuery)
+      }
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnValue(mockEqFirstQuery)
+      }
+
+      // Mock successful deletion
+      const mockDeleteEqSecondQuery = {
+        eq: jest.fn().mockResolvedValue({
+          data: null,
+          error: null
+        })
+      }
+      const mockDeleteEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockDeleteEqSecondQuery)
+      }
+      const mockDeleteQuery = {
+        delete: jest.fn().mockReturnValue(mockDeleteEqFirstQuery)
+      }
+
+      mockSupabase.from
+        .mockReturnValueOnce(mockSelectQuery) // For verification query
+        .mockReturnValueOnce(mockDeleteQuery) // For delete query
+
+      const result = await service.deleteWorkoutRecord(mockRecordId, mockUserId)
+
+      expect(result.success).toBe(true)
+      expect(result.error).toBeUndefined()
+      expect(mockSupabase.from).toHaveBeenCalledWith('workout_records')
+    })
+
+    it('should fail when record does not exist', async () => {
+      const mockEqSecondQuery = {
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: { code: 'PGRST116' } // Record not found
+          })
+        })
+      }
+      const mockEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockEqSecondQuery)
+      }
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnValue(mockEqFirstQuery)
+      }
+
+      mockSupabase.from.mockReturnValue(mockSelectQuery)
+
+      const result = await service.deleteWorkoutRecord(mockRecordId, mockUserId)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBeDefined()
+      expect(result.error?.message).toContain('Registro no encontrado')
+    })
+
+    it('should fail when record belongs to different user', async () => {
+      const mockEqSecondQuery = {
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: null, // No data returned when user_id doesn't match
+            error: null
+          })
+        })
+      }
+      const mockEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockEqSecondQuery)
+      }
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnValue(mockEqFirstQuery)
+      }
+
+      mockSupabase.from.mockReturnValue(mockSelectQuery)
+
+      const result = await service.deleteWorkoutRecord(mockRecordId, 'different-user')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBeDefined()
+      expect(result.error?.message).toContain('Registro no encontrado')
+    })
+
+    it('should validate required parameters', async () => {
+      // Test missing recordId
+      let result = await service.deleteWorkoutRecord('', mockUserId)
+      expect(result.success).toBe(false)
+      expect(result.error?.userMessage).toContain('ID de registro y usuario son requeridos')
+
+      // Test missing userId  
+      result = await service.deleteWorkoutRecord(mockRecordId, '')
+      expect(result.success).toBe(false)
+      expect(result.error?.userMessage).toContain('ID de registro y usuario son requeridos')
+    })
+
+    it('should handle database deletion errors', async () => {
+      // Mock successful record verification
+      const mockEqSecondQuery = {
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { id: mockRecordId, user_id: mockUserId },
+            error: null
+          })
+        })
+      }
+      const mockEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockEqSecondQuery)
+      }
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnValue(mockEqFirstQuery)
+      }
+
+      // Mock deletion failure
+      const mockDeleteEqSecondQuery = {
+        eq: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Delete operation failed' }
+        })
+      }
+      const mockDeleteEqFirstQuery = {
+        eq: jest.fn().mockReturnValue(mockDeleteEqSecondQuery)
+      }
+      const mockDeleteQuery = {
+        delete: jest.fn().mockReturnValue(mockDeleteEqFirstQuery)
+      }
+
+      mockSupabase.from
+        .mockReturnValueOnce(mockSelectQuery)
+        .mockReturnValueOnce(mockDeleteQuery)
+
+      const result = await service.deleteWorkoutRecord(mockRecordId, mockUserId)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBeDefined()
+      expect(result.error?.userMessage).toContain('Error en la base de datos')
+    })
+  })
 })

@@ -3,6 +3,7 @@ import '@testing-library/jest-dom'
 import RecordsList from '@/components/lists/RecordsList'
 import { workoutRecordService } from '@/utils/services/workoutRecords'
 import { createClient } from '@/utils/supabase/client'
+import { AppError, ErrorType } from '@/utils/errorHandling'
 
 // Mock the dependencies
 jest.mock('@/utils/services/workoutRecords')
@@ -139,7 +140,7 @@ describe('RecordsList', () => {
   it('handles error state', async () => {
     mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
       success: false,
-      error: 'Database connection failed'
+      error: new AppError('Database connection failed', ErrorType.DATABASE, 'Connection error')
     })
 
     render(<RecordsList />)
@@ -179,6 +180,152 @@ describe('RecordsList', () => {
       // Should show both lbs and kg
       expect(screen.getByText('200.0 lbs')).toBeInTheDocument()
       expect(screen.getByText('90.7 kg')).toBeInTheDocument()
+    })
+  })
+
+  describe('Delete functionality', () => {
+    it('shows delete button for each record', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        expect(deleteButtons).toHaveLength(2)
+      })
+    })
+
+    it('opens confirmation dialog when delete button is clicked', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        fireEvent.click(deleteButtons[0])
+      })
+
+      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument()
+      expect(screen.getByText('Eliminar Registro')).toBeInTheDocument()
+      expect(screen.getByText(/¿Estás seguro de que quieres eliminar el registro de Clean?/)).toBeInTheDocument()
+    })
+
+    it('closes dialog when cancel is clicked', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        fireEvent.click(deleteButtons[0])
+      })
+
+      fireEvent.click(screen.getByTestId('cancel-button'))
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
+      })
+    })
+
+    it('successfully deletes record when confirmed', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+      mockWorkoutRecordService.deleteWorkoutRecord.mockResolvedValue({
+        success: true
+      })
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user1' } },
+        error: null
+      } as any)
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        fireEvent.click(deleteButtons[0])
+      })
+
+      fireEvent.click(screen.getByTestId('confirm-button'))
+
+      await waitFor(() => {
+        expect(mockWorkoutRecordService.deleteWorkoutRecord).toHaveBeenCalledWith('1', 'user1')
+      })
+
+      // Dialog should close after successful deletion
+      await waitFor(() => {
+        expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
+      })
+
+      // Record should be removed from the list
+      await waitFor(() => {
+        expect(screen.queryByText('Clean')).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows error when deletion fails', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+      mockWorkoutRecordService.deleteWorkoutRecord.mockResolvedValue({
+        success: false,
+        error: new AppError('Error al eliminar el registro', ErrorType.DATABASE, 'Database error')
+      })
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user1' } },
+        error: null
+      } as any)
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        fireEvent.click(deleteButtons[0])
+      })
+
+      fireEvent.click(screen.getByTestId('confirm-button'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Error al eliminar el registro')).toBeInTheDocument()
+      })
+
+      // Dialog should still be open after failed deletion
+      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument()
+    })
+
+    it('handles authentication error during deletion', async () => {
+      mockWorkoutRecordService.getWorkoutRecords.mockResolvedValue({
+        success: true,
+        data: mockRecords as any
+      })
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: 'Not authenticated' }
+      } as any)
+
+      render(<RecordsList />)
+
+      await waitFor(() => {
+        const deleteButtons = screen.getAllByTestId('delete-record-button')
+        fireEvent.click(deleteButtons[0])
+      })
+
+      fireEvent.click(screen.getByTestId('confirm-button'))
+
+      await waitFor(() => {
+        expect(screen.getByText(/Error al eliminar el registro/)).toBeInTheDocument()
+      })
     })
   })
 })
