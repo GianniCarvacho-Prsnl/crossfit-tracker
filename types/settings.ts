@@ -45,6 +45,7 @@ export type SettingsSection =
   | 'exercise-management'
   | 'app-preferences'
   | 'security'
+  | 'about'
 
 // Component prop types
 export interface SettingsCardProps {

@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client'
 import { WorkoutFormData, WorkoutRecord } from '@/types/workout'
 import { calculateOneRM, isCalculatedRM } from '@/utils/calculations'
 import { convertToLbs } from '@/utils/conversions'
-import { retryWithBackoff, classifyError, logError, AppError } from '@/utils/errorHandling'
+import { retryWithBackoff, classifyError, logError, AppError, ErrorType } from '@/utils/errorHandling'
 
 export interface CreateWorkoutRecordResult {
   success: boolean
@@ -16,9 +16,15 @@ export interface GetWorkoutRecordsResult {
   error?: AppError
 }
 
+export interface DeleteWorkoutRecordResult {
+  success: boolean
+  error?: AppError
+}
+
 export interface WorkoutRecordService {
   createWorkoutRecord: (formData: WorkoutFormData) => Promise<CreateWorkoutRecordResult>
   getWorkoutRecords: (userId: string) => Promise<GetWorkoutRecordsResult>
+  deleteWorkoutRecord: (recordId: string, userId: string) => Promise<DeleteWorkoutRecordResult>
 }
 
 /**
@@ -131,6 +137,54 @@ export class WorkoutRecordServiceImpl implements WorkoutRecordService {
       const classified = classifyError(error)
       const appError = new AppError(classified.userMessage, classified.type, error instanceof Error ? error.message : 'Unknown error')
       logError(appError, 'getWorkoutRecords')
+      return { success: false, error: appError }
+    }
+  }
+
+  /**
+   * Delete a workout record with proper authorization and error handling
+   */
+  async deleteWorkoutRecord(recordId: string, userId: string): Promise<DeleteWorkoutRecordResult> {
+    try {
+      // Validate input
+      if (!recordId || !userId) {
+        const appError = new AppError('ID de registro y usuario son requeridos', ErrorType.VALIDATION, 'Missing required parameters')
+        logError(appError, 'deleteWorkoutRecord validation')
+        return { success: false, error: appError }
+      }
+
+      // Use retry logic for the database operation
+      await retryWithBackoff(async () => {
+        // First verify the record belongs to the user
+        const { data: recordData, error: fetchError } = await this.supabase
+          .from('workout_records')
+          .select('id, user_id')
+          .eq('id', recordId)
+          .eq('user_id', userId)
+          .single()
+
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError
+        if (!recordData) throw new Error('Registro no encontrado o no tienes permisos para eliminarlo')
+
+        // Delete the record
+        const { error: deleteError } = await this.supabase
+          .from('workout_records')
+          .delete()
+          .eq('id', recordId)
+          .eq('user_id', userId)
+
+        if (deleteError) throw deleteError
+      }, {
+        maxAttempts: 3,
+        baseDelay: 1000
+      })
+
+      return { success: true }
+
+    } catch (error) {
+      const classified = classifyError(error)
+      const appError = new AppError(classified.userMessage, classified.type, error instanceof Error ? error.message : 'Unknown error')
+      logError(appError, 'deleteWorkoutRecord')
       return { success: false, error: appError }
     }
   }
