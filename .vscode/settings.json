@@ -1,2 +1,5 @@
 {
+    "chat.mcp.discovery.enabled": true,
+    "chat.mcp.serverSampling": {},
+    "github.copilot.chat.newWorkspace.useContext7": true
 }
